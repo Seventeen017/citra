@@ -40,13 +40,12 @@
 #include "network/network.h"
 
 static void PrintHelp(const char* argv0) {
-    std::cout << "Usage: " << argv0
-              << " [options] <filename>\n"
-                 "-g, --gdbport=NUMBER Enable gdb stub on port NUMBER\n"
-                 "-m, --multiplayer=nick:password@address:port"
-                 " Nickname, password, address and port for multiplayer\n"
-                 "-h, --help           Display this help and exit\n"
-                 "-v, --version        Output version information and exit\n";
+    std::cout << "Usage: " << argv0 << " [options] <filename>\n"
+                                       "-g, --gdbport=NUMBER Enable gdb stub on port NUMBER\n"
+                                       "-m, --multiplayer=nick:password@address:port"
+                                       " Nickname, password, address and port for multiplayer\n"
+                                       "-h, --help           Display this help and exit\n"
+                                       "-v, --version        Output version information and exit\n";
 }
 
 static void PrintVersion() {
