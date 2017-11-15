@@ -27,7 +27,7 @@
 namespace Kernel {
 
 /// Event type for the thread wake up event
-static int ThreadWakeupEventType;
+static CoreTiming::EventType* ThreadWakeupEventType = nullptr;
 
 bool Thread::ShouldWait(Thread* thread) const {
     return status != THREADSTATUS_DEAD;
@@ -194,6 +194,7 @@ static void ThreadWakeupCallback(u64 thread_handle, int cycles_late) {
         LOG_CRITICAL(Kernel, "Callback fired for invalid thread %08X", (Handle)thread_handle);
         return;
     }
+    LOG_ERROR(Kernel, "%d", cycles_late);
 
     if (thread->status == THREADSTATUS_WAIT_SYNCH_ANY ||
         thread->status == THREADSTATUS_WAIT_SYNCH_ALL || thread->status == THREADSTATUS_WAIT_ARB) {
@@ -216,8 +217,7 @@ void Thread::WakeAfterDelay(s64 nanoseconds) {
     if (nanoseconds == -1)
         return;
 
-    u64 microseconds = nanoseconds / 1000;
-    CoreTiming::ScheduleEvent(usToCycles(microseconds), ThreadWakeupEventType, callback_handle);
+    CoreTiming::ScheduleEvent(nsToCycles(nanoseconds), ThreadWakeupEventType, callback_handle);
 }
 
 void Thread::ResumeFromWait() {
