@@ -52,55 +52,59 @@ inline s64 usToCycles(int us) {
 }
 
 inline s64 usToCycles(s64 us) {
-    if ((us / 1000000) > MAX_VALUE_TO_MULTIPLY) {
+    if (us / 1000000 > MAX_VALUE_TO_MULTIPLY) {
         LOG_ERROR(Core_Timing, "Integer overflow, use max value");
         return std::numeric_limits<s64>::max();
-    } else if (us > MAX_VALUE_TO_MULTIPLY) {
-        LOG_DEBUG(Core_Timing, "Time very big, do rounding");
-        return (BASE_CLOCK_RATE_ARM11 * (us / 1000000));
     }
-    return (BASE_CLOCK_RATE_ARM11 * us / 1000000);
+    if (us > MAX_VALUE_TO_MULTIPLY) {
+        LOG_DEBUG(Core_Timing, "Time very big, do rounding");
+        return BASE_CLOCK_RATE_ARM11 * (us / 1000000);
+    }
+    return BASE_CLOCK_RATE_ARM11 * us / 1000000;
 }
 
 inline s64 usToCycles(u64 us) {
-    if ((us / 1000000) > MAX_VALUE_TO_MULTIPLY) {
+    if (us / 1000000 > MAX_VALUE_TO_MULTIPLY) {
         LOG_ERROR(Core_Timing, "Integer overflow, use max value");
         return std::numeric_limits<s64>::max();
-    } else if (us > MAX_VALUE_TO_MULTIPLY) {
-        LOG_DEBUG(Core_Timing, "Time very big, do rounding");
-        return (BASE_CLOCK_RATE_ARM11 * static_cast<s64>(us / 1000000));
     }
-    return (BASE_CLOCK_RATE_ARM11 * static_cast<s64>(us) / 1000000);
+    if (us > MAX_VALUE_TO_MULTIPLY) {
+        LOG_DEBUG(Core_Timing, "Time very big, do rounding");
+        return BASE_CLOCK_RATE_ARM11 * static_cast<s64>(us / 1000000);
+    }
+    return BASE_CLOCK_RATE_ARM11 * static_cast<s64>(us) / 1000000;
 }
 
 inline s64 nsToCycles(float ns) {
-    return static_cast<s64>(BASE_CLOCK_RATE_ARM11 * ns * (0.000000001f));
+    return static_cast<s64>(BASE_CLOCK_RATE_ARM11 * ns * 0.000000001f);
 }
 
 inline s64 nsToCycles(int ns) {
-    return (BASE_CLOCK_RATE_ARM11 * static_cast<s64>(ns) / 1000000000);
+    return BASE_CLOCK_RATE_ARM11 * static_cast<s64>(ns) / 1000000000;
 }
 
 inline s64 nsToCycles(s64 ns) {
-    if ((ns / 1000000000) > MAX_VALUE_TO_MULTIPLY) {
+    if (ns / 1000000000 > MAX_VALUE_TO_MULTIPLY) {
         LOG_ERROR(Core_Timing, "Integer overflow, use max value");
         return std::numeric_limits<s64>::max();
-    } else if (ns > MAX_VALUE_TO_MULTIPLY) {
-        LOG_DEBUG(Core_Timing, "Time very big, do rounding");
-        return (BASE_CLOCK_RATE_ARM11 * (ns / 1000000000));
     }
-    return (BASE_CLOCK_RATE_ARM11 * ns / 1000000000);
+    if (ns > MAX_VALUE_TO_MULTIPLY) {
+        LOG_DEBUG(Core_Timing, "Time very big, do rounding");
+        return BASE_CLOCK_RATE_ARM11 * (ns / 1000000000);
+    }
+    return BASE_CLOCK_RATE_ARM11 * ns / 1000000000;
 }
 
 inline s64 nsToCycles(u64 ns) {
-    if ((ns / 1000000000) > MAX_VALUE_TO_MULTIPLY) {
+    if (ns / 1000000000 > MAX_VALUE_TO_MULTIPLY) {
         LOG_ERROR(Core_Timing, "Integer overflow, use max value");
         return std::numeric_limits<s64>::max();
-    } else if (ns > MAX_VALUE_TO_MULTIPLY) {
-        LOG_DEBUG(Core_Timing, "Time very big, do rounding");
-        return (BASE_CLOCK_RATE_ARM11 * static_cast<s64>(ns / 1000000000));
     }
-    return (BASE_CLOCK_RATE_ARM11 * static_cast<s64>(ns) / 1000000000);
+    if (ns > MAX_VALUE_TO_MULTIPLY) {
+        LOG_DEBUG(Core_Timing, "Time very big, do rounding");
+        return BASE_CLOCK_RATE_ARM11 * (static_cast<s64>(ns) / 1000000000);
+    }
+    return BASE_CLOCK_RATE_ARM11 * static_cast<s64>(ns) / 1000000000;
 }
 
 inline u64 cyclesToNs(s64 cycles) {
@@ -148,7 +152,7 @@ void UnregisterAllEvents();
  * is scheduled earlier than the current values.
  * Scheduling from a callback will not update the downcount until the Advance() completes.
  */
-void ScheduleEvent(s64 cycles_into_future, EventType* event_type, u64 userdata = 0);
+void ScheduleEvent(s64 cycles_into_future, const EventType* event_type, u64 userdata = 0);
 
 /**
  * This is to be called when outside of hle threads, such as the graphics thread, wants to
@@ -156,13 +160,13 @@ void ScheduleEvent(s64 cycles_into_future, EventType* event_type, u64 userdata =
  * Not that this doesn't change slice_length and thus events scheduled by this might be called
  * with a delay of up to MAX_SLICE_LENGTH
  */
-void ScheduleEventThreadsafe(s64 cycles_into_future, EventType* event_type, u64 userdata);
+void ScheduleEventThreadsafe(s64 cycles_into_future, const EventType* event_type, u64 userdata);
 
-void UnscheduleEvent(EventType* event_type, u64 userdata);
+void UnscheduleEvent(const EventType* event_type, u64 userdata);
 
 /// We only permit one event of each type in the queue at a time.
-void RemoveEvent(EventType* event_type);
-void RemoveAllEvents(EventType* event_type);
+void RemoveEvent(const EventType* event_type);
+void RemoveAllEvents(const EventType* event_type);
 
 /** Advance must be called at the beginning of dispatcher loops, not the end. Advance() ends
  * the previous timing slice and begins the next one, you must Advance from the previous
@@ -176,10 +180,8 @@ void MoveEvents();
 /// Pretend that the main CPU has executed enough cycles to reach the next event.
 void Idle();
 
-/// Clear all pending events. This should ONLY be done on exit or state load.
+/// Clear all pending events. This should ONLY be done on exit.
 void ClearPendingEvents();
-
-void AdjustEventQueueTimes(u32 new_ppc_clock, u32 old_ppc_clock);
 
 void ForceExceptionCheck(s64 cycles);
 

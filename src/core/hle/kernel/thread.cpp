@@ -194,7 +194,6 @@ static void ThreadWakeupCallback(u64 thread_handle, int cycles_late) {
         LOG_CRITICAL(Kernel, "Callback fired for invalid thread %08X", (Handle)thread_handle);
         return;
     }
-    LOG_ERROR(Kernel, "%d", cycles_late);
 
     if (thread->status == THREADSTATUS_WAIT_SYNCH_ANY ||
         thread->status == THREADSTATUS_WAIT_SYNCH_ALL || thread->status == THREADSTATUS_WAIT_ARB) {

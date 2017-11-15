@@ -6,9 +6,12 @@
 
 #include <array>
 #include <atomic>
-#include "core/core_timing.h"
 #include "core/frontend/input.h"
 #include "core/hle/service/ir/ir_user.h"
+
+namespace CoreTiming {
+struct EventType;
+} // namespace CoreTiming
 
 namespace Service {
 namespace IR {

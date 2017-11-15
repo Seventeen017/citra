@@ -8,6 +8,7 @@
 #include <cinttypes>
 #include <mutex>
 #include <string>
+#include <tuple>
 #include <unordered_map>
 #include <vector>
 #include "common/assert.h"
@@ -30,7 +31,7 @@ struct Event {
     s64 time;
     u64 fifo_order;
     u64 userdata;
-    EventType* type;
+    const EventType* type;
 };
 
 // Sort by time, unless the times are the same, in which case sort by the order added to the queue
@@ -93,7 +94,7 @@ void Init() {
 
     // The time between CoreTiming being intialized and the first call to Advance() is considered
     // the slice boundary between slice -1 and slice 0. Dispatcher loops must call Advance() before
-    // executing the first PPC cycle of each slice to prepare the slice length and downcount for
+    // executing the first cycle of each slice to prepare the slice length and downcount for
     // that slice.
     is_global_timer_sane = true;
 
@@ -130,7 +131,7 @@ void ClearPendingEvents() {
     event_queue.clear();
 }
 
-void ScheduleEvent(s64 cycles_into_future, EventType* event_type, u64 userdata) {
+void ScheduleEvent(s64 cycles_into_future, const EventType* event_type, u64 userdata) {
     ASSERT_MSG(event_type, "Event type is nullptr, will crash now.");
     s64 timeout = GetTicks() + cycles_into_future;
 
@@ -142,12 +143,12 @@ void ScheduleEvent(s64 cycles_into_future, EventType* event_type, u64 userdata) 
     std::push_heap(event_queue.begin(), event_queue.end(), std::greater<Event>());
 }
 
-void ScheduleEventThreadsafe(s64 cycles_into_future, EventType* event_type, u64 userdata) {
+void ScheduleEventThreadsafe(s64 cycles_into_future, const EventType* event_type, u64 userdata) {
     std::lock_guard<std::mutex> lock(ts_write_lock);
     ts_queue.Push(Event{global_timer + cycles_into_future, 0, userdata, event_type});
 }
 
-void UnscheduleEvent(EventType* event_type, u64 userdata) {
+void UnscheduleEvent(const EventType* event_type, u64 userdata) {
     auto itr = std::remove_if(event_queue.begin(), event_queue.end(), [&](const Event& e) {
         return e.type == event_type && e.userdata == userdata;
     });
@@ -159,7 +160,7 @@ void UnscheduleEvent(EventType* event_type, u64 userdata) {
     }
 }
 
-void RemoveEvent(EventType* event_type) {
+void RemoveEvent(const EventType* event_type) {
     auto itr = std::remove_if(event_queue.begin(), event_queue.end(),
                               [&](const Event& e) { return e.type == event_type; });
 
@@ -170,7 +171,7 @@ void RemoveEvent(EventType* event_type) {
     }
 }
 
-void RemoveAllEvents(EventType* event_type) {
+void RemoveAllEvents(const EventType* event_type) {
     MoveEvents();
     RemoveEvent(event_type);
 }
@@ -196,8 +197,8 @@ void MoveEvents() {
 void Advance() {
     MoveEvents();
 
-    int cyclesExecuted = slice_length - downcount;
-    global_timer += cyclesExecuted;
+    int cycles_executed = slice_length - downcount;
+    global_timer += cycles_executed;
     slice_length = MAX_SLICE_LENGTH;
 
     is_global_timer_sane = true;
