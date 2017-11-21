@@ -113,7 +113,7 @@ public:
     template <typename Arg>
     void Push(Arg&& t) {
         std::lock_guard<std::mutex> lock(write_lock);
-        SPSCQueue<T,NeedSize>::Push(t);
+        SPSCQueue<T, NeedSize>::Push(t);
     }
 
 private:
