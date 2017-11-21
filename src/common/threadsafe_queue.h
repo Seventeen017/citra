@@ -108,7 +108,7 @@ private:
 // single reader, multiple writer queue
 
 template <typename T, bool NeedSize = true>
-class MPSCQueue : public SPSCQueue<T,NeedSize> {
+class MPSCQueue : public SPSCQueue<T, NeedSize> {
 public:
     template <typename Arg>
     void Push(Arg&& t) {
