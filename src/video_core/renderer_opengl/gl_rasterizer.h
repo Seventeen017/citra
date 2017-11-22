@@ -284,7 +284,6 @@ private:
     std::array<SamplerInfo, 3> texture_samplers;
     OGLVertexArray vertex_array;
     OGLBuffer vertex_buffer;
-    GLsizeiptr vertex_buffer_size;
     OGLBuffer uniform_buffer;
     OGLFramebuffer framebuffer;
 
